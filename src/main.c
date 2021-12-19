@@ -1,21 +1,34 @@
 #include <stdio.h>
 #define BYTE unsigned char
+#define BOOL unsigned char
 
-short i;
-short x;
-BYTE y;
-BYTE direction; 
-short ad;
-short x2;
-BYTE y2;
-BYTE direction2; 
+static const BYTE RIGHT = 64*0;
+static const BYTE UP    = 64*1;
+static const BYTE LEFT  = 64*2;
+static const BYTE DOWN  = 64*3;
+
+static const BYTE CCW = 64;
+static const BYTE CW  = -CCW;
+
+static BOOL CONTINUE  = 0;
+static BOOL COMPLETED = 1;
+
+#define ADR(x,y) (0x2000+(320 * (BYTE)(y/8)) + (y & 7)+8 * (BYTE)(x/8))
+
+struct Ant {
+  short x;
+  BYTE y;
+  BYTE direction;
+};
 
 void setHiRes() {
-    *(BYTE*)0xd011 = *(BYTE*)0xd011 | 0xb0 ; // Graphics on
-    *(BYTE*)0xd016 = *(BYTE*)0xd016 & 240; //Multi color off
-    *(BYTE*)0xd018 = *(BYTE*)0xd018 | 8 ; // Graphics to $2000
+    *(BYTE*)0xd011 |= 0xb0 ; // Graphics on
+    *(BYTE*)0xd016 &= 240; //Multi color off
+    *(BYTE*)0xd018 |= 8 ; // Graphics to $2000
 }
+
 void clearHiRes() {
+    short i;
     for (i =0;i< 8000; i++)
     {
         *(BYTE*)(0x2000+i) = 0; 
@@ -32,97 +45,62 @@ void setAndClearHiRes(){
     setHiRes();
 }
 
-BYTE isPositionWhite() {
-    ad = 0x2000+(320 * (BYTE)(y/8)) + (y & 7)+8 * (BYTE)(x/8);
-    return *(short*)(ad) & 1 << ((7-(x & 7)));
+BYTE isPositionWhite(short x, BYTE y) {
+    return *(short*)(ADR(x,y)) & 1 << ((7-(x & 7)));
 }
 
-void setPositionWhite() {
-    ad = 0x2000+(320 * (y/8)) + (y & 7)+8 * (x/8);
-    *(short*)(ad) = *(short*)(ad) | 1 << ((7-(x & 7)));
+void setPositionWhite(short x, BYTE y) {
+    *(short*)(ADR(x,y)) |= 1 << ((7-(x & 7)));
 }
 
-void setPositionBlack() {
-    ad = 0x2000+320 * (y/8) + (y & 7)+8 * (x/8);
-    *(short*)(ad) = (*(short*)(ad)) & ~(1 << ((7-(x & 7))));
+void setPositionBlack(short x, BYTE y) {
+    *(short*)(ADR(x,y)) &= ~(1 << ((7-(x & 7))));
 }
 
-void moveForward() {
-    if (direction == 0) {
-        x = x+1;
-    } else if (direction == 64) {
-        y = y+1;
-    } else if (direction == 128) {
-        x = x-1;
-    } else if (direction == 192) {
-        y = y-1;
+BOOL moveForward(short *x, BYTE *y, BYTE direction) {
+    if (direction == RIGHT) {
+        if (*x==319) return COMPLETED;
+        *x++;
+    } else if (direction == UP) {
+        if (*y==199) return COMPLETED;
+        *y++;
+    } else if (direction == LEFT) {
+        if (*x==0) return COMPLETED;
+        *x--;
+    } else if (direction == DOWN) {
+        if (*y==0) return COMPLETED;
+        *y--;
     }
+    return CONTINUE;
 }
 
-void makeMove() {
-    if (isPositionWhite()) {
-        direction = direction - 64;
-        setPositionBlack();
+BOOL makeMove(short *x, BYTE *y, BYTE *direction) {
+    if (isPositionWhite(*x, *y)) {
+        direction += CW;
+        setPositionBlack(*x, *y);
    } else {
-        direction = direction + 64;
-        setPositionWhite();
+        direction += CCW;
+        setPositionWhite(*x, *y);
     }
-    moveForward();
+    return moveForward(x, y, *direction);
 }
-BYTE isPositionWhite2() {
-    ad = 0x2000+(320 * (BYTE)(y2/8)) + (y2 & 7)+8 * (BYTE)(x2/8);
-    return *(short*)(ad) & 1 << ((7-(x2 & 7)));
-}
-
-void setPositionWhite2() {
-    ad = 0x2000+(320 * (y2/8)) + (y2 & 7)+8 * (x2/8);
-    *(short*)(ad) = *(short*)(ad) | 1 << ((7-(x2 & 7)));
-}
-
-void setPositionBlack2() {
-    ad = 0x2000+320 * (y2/8) + (y2 & 7)+8 * (x2/8);
-    *(short*)(ad) = (*(short*)(ad)) & ~(1 << ((7-(x2 & 7))));
-}
-
-void moveForward2() {
-    if (direction2 == 0) {
-        x2 = x2+1;
-    } else if (direction2 == 64) {
-        y2 = y2+1;
-    } else if (direction2 == 128) {
-        x2 = x2-1;
-    } else if (direction2 == 192) {
-        y2 = y2-1;
-    }
-}
-
-void makeMove2() {
-    if (isPositionWhite2()) {
-        direction2 = direction2 - 64;
-        setPositionBlack2();
-   } else {
-        direction2 = direction2 + 64;
-        setPositionWhite2();
-    }
-    moveForward2();
-}
-
 
 int main(void) {
+    struct Ant ants[] = {{160, 100, RIGHT},
+                         {150, 100, DOWN}};
+    
+    short i;
     for (i = 0;i<12;i++) { printf("\n"); }
     printf("Please wait for ant ...\n");
     for (i = 0;i<12;i++) { printf("\n"); }
     setAndClearHiRes();
-    x2 = 150;
-    y2 = 100;
-    direction2 = 192;
-    x = 160;
-    y = 100;
-    direction = 0;
-    while(x > 0 && x < 320 && y > 0 && y < 200)
+    BOOL completed = CONTINUE;
+    while(!completed)
     {
-       makeMove();
-       makeMove2();
+      for (i = 0;i<sizeof(ants)/sizeof(ants[0]);i++)
+      {
+        completed |= makeMove(&ants[i].x, &ants[i].y, &ants[i].direction);
+      }
     }
     return 0;
 }
