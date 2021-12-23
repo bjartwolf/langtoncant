@@ -1,26 +1,26 @@
 {
-	"version": "2.0.0",
-	"tasks": [
-		{
-			"label": "Make out",
-			"type": "shell",
-			"command": "mkdir out"
-		},
-		{
-			"label": "Build program",
-			"type": "shell",
-			"command": "cl65 src/main.c -o out/program.c64"
-		},
-		{
-			"label": "Run program",
-			"type": "shell",
-			"command": " x64sc.exe out/program.c64"
-		},
-		{
-			"label": "Build & run program with optimization",
-			"type": "shell",
-			"command": "cl65 src/main.c -o out/program.c64 -Oi && x64sc.exe out/program.c64",
-			"problemMatcher": []
-		}
-	]
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "options": {
+        "env": {
+            "ELECTRON_RUN_AS_NODE": "1"
+        }
+    },
+    "tasks": [
+        {
+            "label": "Build",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "windows": {
+                "command": "\"${workspaceFolder}/mk.bat\""
+            },
+            "linux": {
+                "command": "sh \"${workspaceFolder}/mk.sh\""
+            }
+        }
+    ]
 }
