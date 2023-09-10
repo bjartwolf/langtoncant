@@ -2,11 +2,13 @@
 #define BYTE unsigned char
 
 short i;
+short j;
 short x;
 BYTE y;
-BYTE direction; 
+BYTE res;
 short ad;
 short tmpY;
+short nrOfAlive;
 
 void setHiRes() {
     *(BYTE*)0xd011 = *(BYTE*)0xd011 | 0xb0 ; // Graphics on
@@ -44,6 +46,88 @@ BYTE isPositionWhite() {
     return *(short*)(ad) & 1 << ((7-(x & 7)));
 }
 
+BYTE isNWhite() {
+    y++;
+    calcAdress();
+    res = *(short*)(ad) & 1 << ((7-(x & 7)));
+    y--;
+    calcAdress();
+    return res;
+}
+
+BYTE isNEWhite() {
+    y++;
+    x++;
+    calcAdress();
+    res = *(short*)(ad) & 1 << ((7-(x & 7)));
+    y--;
+    x--;
+    calcAdress();
+    return res;
+}
+
+BYTE isEWhite() {
+    x++;
+    calcAdress();
+    res = *(short*)(ad) & 1 << ((7-(x & 7)));
+    x--;
+    calcAdress();
+    return res;
+}
+
+BYTE isSEWhite() {
+    y--;
+    x++;
+    calcAdress();
+    res = *(short*)(ad) & 1 << ((7-(x & 7)));
+    y++;
+    x--;
+    calcAdress();
+    return res;
+}
+
+BYTE isSWhite() {
+    y--;
+    calcAdress();
+    res = *(short*)(ad) & 1 << ((7-(x & 7)));
+    y++;
+    calcAdress();
+    return res;
+}
+
+BYTE isSWWhite() {
+    y--;
+    x--;
+    calcAdress();
+    res = *(short*)(ad) & 1 << ((7-(x & 7)));
+    x++;
+    y++;
+    calcAdress();
+    return res;
+}
+
+
+BYTE isWWhite() {
+    x--;
+    calcAdress();
+    res = *(short*)(ad) & 1 << ((7-(x & 7)));
+    x++;
+    calcAdress();
+    return res;
+}
+
+BYTE isNWWhite() {
+    y++;
+    x--;
+    calcAdress();
+    res = *(short*)(ad) & 1 << ((7-(x & 7)));
+    y--;
+    x++;
+    calcAdress();
+    return res;
+}
+
+
 // https://archive.org/details/The_Graphics_Book_for_the_Commodore_65/page/n129/
 void setPositionWhite() {
     calcAdress();
@@ -55,27 +139,33 @@ void setPositionBlack() {
     *(short*)(ad) = (*(short*)(ad)) & ~(1 << ((7-(x & 7))));
 }
 
-void moveForward() {
-    if (direction == 0) {
-        x = x+1;
-    } else if (direction == 64) {
-        y = y+1;
-    } else if (direction == 128) {
-        x = x-1;
-    } else if (direction == 192) {
-        y = y-1;
+int countAliveNeighbors(){
+    nrOfAlive = 0;
+    if (isNWhite()) {
+        nrOfAlive++;
     }
-}
-
-void makeMove() {
-    if (isPositionWhite()) {
-        direction = direction - 64;
-        setPositionBlack();
-   } else {
-        direction = direction + 64;
-        setPositionWhite();
+    if (isNEWhite()) {
+        nrOfAlive++;
     }
-    moveForward();
+    if (isEWhite()){
+        nrOfAlive++;
+    }
+    if (isSEWhite()) {
+        nrOfAlive++;
+    }
+    if (isSWhite()) {
+        nrOfAlive++;
+    }
+    if (isSWWhite()) {
+        nrOfAlive++;
+    }
+    if (isWWhite()){
+        nrOfAlive++;
+    }
+    if (isNWWhite()){
+        nrOfAlive++;
+    }
+    return nrOfAlive;
 }
 
 int main(void) {
@@ -83,13 +173,44 @@ int main(void) {
     printf("Please wait for ant ...\n");
     for (i = 0;i<12;i++) { printf("\n"); }
     setAndClearHiRes();
-    x = 270;
+    x = 100;
     y = 100;
-    direction = 0;
+    setPositionWhite();
+    x++;
+    setPositionWhite();
+    x++;
+    setPositionWhite();
+
+    /*
+    x = 100;
+    y = 100;
+    setPositionWhite();
+    x++;
+    y--;
+    setPositionWhite(); 
+    x++; 
+    setPositionWhite();
+    y++;
+    setPositionWhite();
+    y++;
+    setPositionWhite();
+*/
     //while(x > 0 && x < 320 && y > 0 && y < 200)
     while(1)
     {
-       makeMove();
+        for (i =90;i< 110; i++) {
+            for (j =90;j< 110; j++) {
+                x = i;
+                y = j;
+                countAliveNeighbors();
+                if (!isPositionWhite() && (nrOfAlive == 2 || nrOfAlive == 3)) {
+                } else if ((isPositionWhite()) && nrOfAlive == 3){
+                    setPositionWhite(); // spawning
+                } else {
+                    setPositionBlack();
+                }
+            }
+        }
     }
     return 0;
 }
