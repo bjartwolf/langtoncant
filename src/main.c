@@ -223,8 +223,8 @@ int main(void) {
 
     while(1)
     {
-        for (i =90;i< 110; i++) {
-            for (j =90;j< 110; j++) {
+        for (i =80;i< 120; i++) {
+            for (j =80;j< 120; j++) {
                 x = i;
                 y = j;
                 countAliveNeighbors();
