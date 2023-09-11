@@ -89,7 +89,6 @@ BYTE isNWhite() {
     calcReadAddress();
     res = *(short*)(ad) & 1 << ((7-(x & 7)));
     y--;
-    calcReadAddress();
     return res;
 }
 
@@ -100,7 +99,6 @@ BYTE isNEWhite() {
     res = *(short*)(ad) & 1 << ((7-(x & 7)));
     y--;
     x--;
-    calcReadAddress();
     return res;
 }
 
@@ -109,7 +107,6 @@ BYTE isEWhite() {
     calcReadAddress();
     res = *(short*)(ad) & 1 << ((7-(x & 7)));
     x--;
-    calcReadAddress();
     return res;
 }
 
@@ -120,7 +117,6 @@ BYTE isSEWhite() {
     res = *(short*)(ad) & 1 << ((7-(x & 7)));
     y++;
     x--;
-    calcReadAddress();
     return res;
 }
 
@@ -129,7 +125,6 @@ BYTE isSWhite() {
     calcReadAddress();
     res = *(short*)(ad) & 1 << ((7-(x & 7)));
     y++;
-    calcReadAddress();
     return res;
 }
 
@@ -140,7 +135,6 @@ BYTE isSWWhite() {
     res = *(short*)(ad) & 1 << ((7-(x & 7)));
     x++;
     y++;
-    calcReadAddress();
     return res;
 }
 
@@ -150,7 +144,6 @@ BYTE isWWhite() {
     calcReadAddress();
     res = *(short*)(ad) & 1 << ((7-(x & 7)));
     x++;
-    calcReadAddress();
     return res;
 }
 
@@ -161,7 +154,6 @@ BYTE isNWWhite() {
     res = *(short*)(ad) & 1 << ((7-(x & 7)));
     y--;
     x++;
-    calcReadAddress();
     return res;
 }
 
@@ -226,16 +218,9 @@ int main(void) {
     setPositionWhite();
     y++;
     setPositionWhite();
-    /*
-    setPositionWhite();
-    x++;
-    setPositionWhite();
-    x++;
-    setPositionWhite();
-*/
+
     swapBuffer(); 
 
-    //while(x > 0 && x < 320 && y > 0 && y < 200)
     while(1)
     {
         for (i =90;i< 110; i++) {
