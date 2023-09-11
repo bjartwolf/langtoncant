@@ -214,15 +214,6 @@ int main(void) {
     x = 100;
     y = 100;
     showBufferOne();
-    setPositionWhite();
-    x++;
-    setPositionWhite();
-    x++;
-    setPositionWhite();
-
-    swapBuffer(); 
-
-    /*
     x = 100;
     y = 100;
     setPositionWhite();
@@ -235,7 +226,15 @@ int main(void) {
     setPositionWhite();
     y++;
     setPositionWhite();
+    /*
+    setPositionWhite();
+    x++;
+    setPositionWhite();
+    x++;
+    setPositionWhite();
 */
+    swapBuffer(); 
+
     //while(x > 0 && x < 320 && y > 0 && y < 200)
     while(1)
     {
